@@ -26,6 +26,12 @@ export default {
           indigo: '#818CF8',
           rose: '#FB7185',
           amber: '#FBBF24'
+        },
+        space: {
+          ink: '#070B1F',
+          blue: '#101A3D',
+          violet: '#7656B8',
+          pink: '#ED8BC2'
         }
       },
       fontFamily: {

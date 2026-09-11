@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { User, generatePseudonymousId } from '../models/User.js';
+import { IdentityToken } from '../models/IdentityToken.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mindbridge-zero-knowledge-secret-key-2026';
 const JWT_EXPIRES_IN = '24h';
@@ -112,7 +113,35 @@ export const regenerateAlias = async (req, res) => {
   }
 };
 
+export const registerStudent = async (req, res) => {
+  try {
+    const uid = String(req.body?.uid || '').trim().toUpperCase();
+    if (!uid) return res.status(400).json({ success: false, message: 'An administrator-issued UID is required' });
+
+    const tokenRecord = await IdentityToken.findOneAndUpdate(
+      { uid, status: 'UNASSIGNED', expiresAt: { $gt: new Date() } },
+      { status: 'ACTIVE' },
+      { new: true }
+    );
+    if (!tokenRecord) return res.status(403).json({ success: false, message: 'UID is invalid, expired, or already assigned' });
+
+    const anonymousId = generatePseudonymousId();
+    const rawSessionToken = crypto.randomUUID();
+    const sessionTokenHash = crypto.createHash('sha256').update(rawSessionToken + uid).digest('hex');
+    const studentHash = crypto.createHash('sha256').update(sessionTokenHash).digest('hex');
+
+    await IdentityToken.updateOne({ _id: tokenRecord._id }, { studentHash });
+    const userDoc = await User.create({ anonymousId, sessionTokenHash, role: 'student', isAvailable: false, activeTags: [] });
+    const token = jwt.sign({ anonymousId, role: 'student', sessionTokenHash, uidVerified: true }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return res.status(201).json({ success: true, token, data: { anonymousId, alias: anonymousId, anonymousHashId: sessionTokenHash, role: userDoc.role, uidVerified: true } });
+  } catch (error) {
+    console.error('[authController] Student registration error:', error.message);
+    return res.status(500).json({ success: false, message: 'Unable to complete student registration' });
+  }
+};
+
 export default {
   createAnonymousSession,
-  regenerateAlias
+  regenerateAlias,
+  registerStudent
 };

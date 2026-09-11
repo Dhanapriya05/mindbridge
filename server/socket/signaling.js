@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import crypto from 'crypto';
 import { SessionModel } from '../models/Session.js';
+import { registerCounselorSignaling } from './counselorSignaling.js';
 
 /**
  * MindBridge Real-Time Ephemeral Signaling Engine
@@ -45,6 +46,7 @@ export const initSignaling = (httpServer) => {
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
     }
   });
+  registerCounselorSignaling(io);
 
   io.on('connection', (socket) => {
     // ========================================================

@@ -44,6 +44,22 @@ export const PeerDashboard = ({ user, socketHook }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeRoomId, setActiveRoomId] = useState(null);
 
+  const openTopicAIChat = (topicId) => {
+    const topic = PEER_TOPICS.find((t) => t.id === topicId) || PEER_TOPICS[0];
+    const guidanceMessage = `I am here to help with ${topic.title}. This is a gentle place to talk about what feels hard. What is the most stressful part for you right now, and what would make the next few minutes feel a bit safer or lighter?`;
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('mindbridge-ai-chat', {
+          detail: {
+            topic: topic.title,
+            message: guidanceMessage
+          }
+        })
+      );
+    }
+  };
+
   const startMatching = async (topicId) => {
     const topic = topicId || selectedTopic;
     setIsMatching(true);
@@ -62,7 +78,16 @@ export const PeerDashboard = ({ user, socketHook }) => {
 
       const data = await response.json();
       if (data.success && data.data) {
+        const selected = PEER_TOPICS.find((t) => t.id === topic) || PEER_TOPICS[0];
         setActiveRoomId(data.data.roomId);
+
+        window.dispatchEvent(new CustomEvent('mindbridge-open-ai', {
+          detail: {
+            topic: selected.title,
+            description: selected.desc
+          }
+        }));
+
         // Short delay for smooth transition
         setTimeout(() => {
           setIsMatching(false);
@@ -134,6 +159,7 @@ export const PeerDashboard = ({ user, socketHook }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  openTopicAIChat(topic.id);
                   startMatching(topic.id);
                 }}
                 disabled={isMatching}

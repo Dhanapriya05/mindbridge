@@ -10,6 +10,11 @@ import { SOSModal } from './components/SOSModal';
 import { useSocket } from './hooks/useSocket';
 import { useWebAudioMask } from './hooks/useWebAudioMask';
 import { ShieldCheck, Sparkles, PhoneCall } from 'lucide-react';
+import { RegistrationGate } from './components/RegistrationGate';
+import { RelaxationSuite } from './pages/RelaxationSuite';
+import { AdminUIDManager } from './pages/AdminUIDManager';
+import { GalaxyDecor } from './components/GalaxyDecor';
+import { AIChatbot } from './components/AIChatbot';
 
 function MindBridgeApp() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -36,12 +41,7 @@ function MindBridgeApp() {
         }
       } catch (err) {
         console.warn('Anonymous session init offline fallback:', err);
-        setUser({
-          anonymousHashId: 'anon-' + Math.random().toString(36).substring(2, 9),
-          alias: 'TranquilLotus-482',
-          avatarSeed: 'seed-alpha',
-          campusZone: 'Pan-India Youth Circle'
-        });
+        setUser(null);
       }
     };
 
@@ -65,10 +65,11 @@ function MindBridgeApp() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 selection:bg-brand-500/30 selection:text-brand-700 dark:selection:text-brand-200">
+    <div className="galaxy-app min-h-screen flex flex-col text-slate-800 font-sans transition-colors duration-300 selection:bg-sky-300/50 selection:text-sky-950">
+      <GalaxyDecor />
       
       {/* Top Navigation with Theme Toggle */}
-      <Navbar
+      {!user ? <RegistrationGate onRegistered={setUser} /> : <><Navbar
         user={user}
         onRegenerateAlias={handleRegenerateAlias}
         currentPage={currentPage}
@@ -116,7 +117,9 @@ function MindBridgeApp() {
             socketHook={socketHook}
           />
         )}
-      </main>
+        {currentPage === 'relaxation' && <RelaxationSuite />}
+        {currentPage === 'admin' && <AdminUIDManager />}
+      </main></>}
 
       {/* Emergency Crisis SOS Modal */}
       <SOSModal
@@ -125,33 +128,34 @@ function MindBridgeApp() {
       />
 
       {/* Footer with Zero-Knowledge Transparency Note */}
-      <footer className="glass-panel border-t border-slate-200 dark:border-slate-800/80 py-8 px-4 text-center mt-auto">
+      <footer className="glass-panel border-t border-white/10 py-8 px-4 text-center mt-auto">
         <div className="max-w-4xl mx-auto space-y-4">
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center space-x-1.5 text-slate-700 dark:text-slate-300">
               <ShieldCheck className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-              <span>Zero PII Storage</span>
+              <span>No personal details saved</span>
             </div>
             <div className="flex items-center space-x-1.5 text-slate-700 dark:text-slate-300">
               <Sparkles className="w-4 h-4 text-calm-cyan" />
-              <span>Ephemeral RAM Message Relays</span>
+              <span>Messages fade away</span>
             </div>
             <div className="flex items-center space-x-1.5 text-slate-700 dark:text-slate-300">
               <PhoneCall className="w-4 h-4 text-rose-500 dark:text-rose-400" />
-              <span>Govt Tele-MANAS (14416) Integrated</span>
+              <span>Help line: Tele-MANAS 14416</span>
             </div>
           </div>
 
           <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            MindBridge is a stepped-care mental wellbeing platform for Indian college students. In cases of acute life-threatening crisis or self-harm risk, please immediately dial national emergency <strong>112</strong> or Tele-MANAS at <strong>14416</strong>.
+            MindBridge is a quiet place for Indian college students. If you may hurt yourself or are in danger, call <strong>112</strong> or Tele-MANAS at <strong>14416</strong> now.
           </p>
 
           <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-            MindBridge © {new Date().getFullYear()} • Zero-Knowledge Sanctuary
+            MindBridge © {new Date().getFullYear()} • Your quiet corner of the galaxy
           </div>
         </div>
       </footer>
 
+      <AIChatbot />
     </div>
   );
 }

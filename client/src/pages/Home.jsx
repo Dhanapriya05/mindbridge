@@ -7,7 +7,9 @@ import {
   PhoneCall, 
   ArrowRight, 
   Activity, 
-  Users
+  Users,
+  Moon,
+  Sparkle
 } from 'lucide-react';
 
 export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
@@ -56,48 +58,77 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
   const stressors = pulseData.primaryCampusStressors || [];
 
   return (
-    <div className="space-y-16 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="space-y-14 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       
       {/* Hero Section */}
       <section className="text-center max-w-3xl mx-auto space-y-6 pt-4">
         
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-700 dark:text-brand-300 text-xs font-semibold animate-pulse">
-          <ShieldCheck className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-          <span>Stepped-Care • Zero-Knowledge Sanctuary for Indian Youth</span>
+        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-calm-cyan/10 border border-calm-cyan/25 text-calm-cyan text-xs font-semibold animate-pulse">
+          <ShieldCheck className="w-4 h-4" />
+          <span>A private place to feel a little lighter</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-black font-display tracking-tight text-slate-900 dark:text-white leading-tight">
-          A Safe Space Where <br />
-          <span className="bg-gradient-to-r from-brand-600 via-teal-500 to-calm-cyan dark:from-brand-300 dark:via-teal-200 dark:to-calm-cyan bg-clip-text text-transparent">
-            No One Knows Who You Are.
+        <h1 className="text-4xl sm:text-6xl font-black font-display tracking-tight text-sky-950 leading-tight">
+          Welcome back, <br />
+          <span className="bg-gradient-to-r from-calm-cyan via-white to-space-pink bg-clip-text text-transparent">
+            little stargazer.
           </span>
         </h1>
 
-        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
-          Navigate college pressure, placement anxiety, and hostel loneliness with complete privacy.
-          Anonymous triage, communal bio-resonance, and instant crisis support.
+        <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
+          Take a small break, breathe slowly, and find your next calm step. You can use this space without sharing your name.
         </p>
 
         {/* Hero CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <button
             onClick={() => onNavigate('triage')}
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500 via-teal-500 to-calm-cyan text-white dark:text-slate-950 font-extrabold text-base shadow-xl shadow-brand-500/25 hover:scale-105 transition-all flex items-center justify-center space-x-3"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-400 text-white font-extrabold text-base shadow-xl shadow-sky-500/25 hover:-translate-y-0.5 hover:scale-[1.02] transition-all flex items-center justify-center space-x-3"
           >
             <Sparkles className="w-5 h-5 text-amber-200 dark:text-slate-900" />
-            <span>Take Anonymous Check-In</span>
+            <span>Check in</span>
             <ArrowRight className="w-4 h-4" />
           </button>
 
           <button
             onClick={() => onNavigate('lounge')}
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl glass-panel border border-slate-200 dark:border-slate-700 hover:border-brand-500/50 text-slate-800 dark:text-white font-semibold text-base hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all flex items-center justify-center space-x-3"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl glass-panel border border-sky-200 hover:border-sky-400 text-sky-900 font-semibold text-base hover:bg-white transition-all flex items-center justify-center space-x-3"
           >
             <Users className="w-5 h-5 text-calm-cyan" />
-            <span>Enter Empathy Lounge</span>
+            <span>Talk together</span>
           </button>
         </div>
 
+      </section>
+
+      <section className="glass-panel-glow rounded-[2rem] p-6 sm:p-10 overflow-hidden relative">
+        <div className="absolute -right-16 -top-20 w-56 h-56 rounded-full bg-space-violet/20 blur-3xl" />
+        <div className="grid lg:grid-cols-[1fr_auto] items-center gap-10 relative">
+          <div className="max-w-xl">
+            <p className="space-eyebrow mb-3">Your quiet journey</p>
+            <h2 className="text-3xl sm:text-4xl font-bold font-display text-sky-950">Start with one soft breath.</h2>
+            <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600">
+              Follow a glowing moon through four easy steps. No pressure. You can pause whenever you like.
+            </p>
+            <button
+              onClick={() => onNavigate('breathing')}
+              className="mt-6 inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-space-violet to-space-pink text-white font-bold shadow-lg shadow-space-violet/30 hover:-translate-y-0.5 transition-transform"
+            >
+              <Wind className="w-5 h-5" />
+              <span>Start breathing</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="relative mx-auto w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center animate-float">
+            <div className="absolute inset-0 rounded-full bg-space-pink/20 blur-2xl" />
+            <div className="absolute inset-5 rounded-full border border-calm-cyan/30" />
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full flex items-center justify-center bg-[radial-gradient(circle_at_35%_30%,#fff8f3_0_5%,#ed8bc2_28%,#24194f_75%)] shadow-[0_0_60px_rgba(237,139,194,0.45)]">
+              <Moon className="w-14 h-14 text-white/90 fill-white/20" />
+            </div>
+            <Sparkle className="absolute top-2 right-7 w-5 h-5 text-calm-cyan" />
+            <Sparkle className="absolute bottom-7 left-2 w-4 h-4 text-space-pink" />
+          </div>
+        </div>
       </section>
 
       {/* Live Campus Wellbeing Pulse Barometer */}
@@ -106,10 +137,10 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
           <div>
             <div className="flex items-center space-x-2">
               <Activity className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-              <h2 className="text-xl font-bold font-display text-slate-900 dark:text-white">Live Pan-India Campus Pulse</h2>
+              <h2 className="text-xl font-bold font-display text-sky-950">How people are feeling</h2>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              De-identified macro indicators showing how peers are feeling right now.
+              A broad, anonymous look at what students are carrying today.
             </p>
           </div>
 
@@ -131,8 +162,8 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
 
         {/* Top Stressors Bar */}
         <div className="space-y-4">
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
-            Current Primary Academic Stressors:
+              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
+            Common heavy thoughts:
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stressors.map((st, idx) => (
@@ -156,9 +187,9 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
       {/* Stepped Care 3-Tier Core Pillars */}
       <section className="space-y-8">
         <div className="text-center max-w-xl mx-auto">
-          <h2 className="text-3xl font-bold font-display text-slate-900 dark:text-white">Stepped-Care Architecture</h2>
+          <h2 className="text-3xl font-bold font-display text-sky-950">Choose your next step</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Clinical triage that routes you to the exact right level of care without storing any personal records.
+            Pick what feels right today. You can change your mind at any time.
           </p>
         </div>
 
@@ -170,17 +201,17 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
                 <Wind className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Tier 1 • Mild</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Self-Guided Micro-Tools</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">Start here</span>
+              <h3 className="text-xl font-bold text-sky-950">Calm by yourself</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                4-4-4-4 Sama Vritti Pranayama, 432 Hz Solfeggio sound masking, and nervous system regulation.
+                Try breathing, gentle sounds, and small tools to help your body slow down.
               </p>
             </div>
             <button
               onClick={() => onNavigate('breathing')}
               className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-800 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all"
             >
-              Launch Box Breathing
+              Try breathing
             </button>
           </div>
 
@@ -190,17 +221,17 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
               <div className="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-600 dark:text-brand-300 group-hover:scale-105 transition-transform">
                 <HeartHandshake className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-300 block">Tier 2 • Moderate</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Anonymous Peer Empathy</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-calm-cyan block">With someone</span>
+              <h3 className="text-xl font-bold text-sky-950">Talk to a peer</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Ephemeral 1:1 rooms with peers who share the same campus context. In-memory only with instant panic purge.
+                Meet someone who understands. Your room is private and messages fade away.
               </p>
             </div>
             <button
               onClick={() => onNavigate('peer')}
               className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-brand-950/60 text-slate-800 dark:text-slate-200 hover:text-brand-700 dark:hover:text-brand-300 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all"
             >
-              Find Peer Match
+              Find a peer
             </button>
           </div>
 
@@ -210,17 +241,17 @@ export const Home = ({ onNavigate, onOpenSOS, audioMask }) => {
               <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-105 transition-transform">
                 <PhoneCall className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block">Tier 3 • Acute</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Crisis Escalation (Tele-MANAS)</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 block">Need help now</span>
+              <h3 className="text-xl font-bold text-sky-950">Call for help</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Instant 1-tap connection to verified Indian government & youth mental health helplines 24/7.
+                Get quick help from trusted Indian support lines, any time.
               </p>
             </div>
             <button
               onClick={onOpenSOS}
               className="w-full py-3 rounded-xl bg-rose-500/15 hover:bg-rose-600 text-rose-700 dark:text-rose-300 hover:text-white text-xs font-bold border border-rose-500/30 dark:border-rose-500/40 transition-all"
             >
-              Open Crisis Helplines
+              Get help now
             </button>
           </div>
 

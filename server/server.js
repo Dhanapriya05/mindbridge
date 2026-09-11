@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 import triageRoutes from './routes/triageRoutes.js';
 import pulseRoutes from './routes/pulseRoutes.js';
 import peerRoutes from './routes/peerRoutes.js';
+import identityRoutes from './routes/identityRoutes.js';
 import { anonymityGuard } from './middleware/anonymityGuard.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
 
@@ -17,8 +18,11 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// 1. Initialize MongoDB Atlas Zero-PII Connection
-await connectDB();
+// 1. Start the API even when local MongoDB is unavailable.
+// The database wrapper keeps retrying while routes use its memory fallback.
+connectDB().catch((error) => {
+  console.warn(`[BackendAgent] Starting in memory mode: ${error.message}`);
+});
 
 // 2. Global Security & Zero-Knowledge Privacy Middleware
 app.use(
@@ -45,6 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/triage', triageRoutes);
 app.use('/api/pulse', pulseRoutes);
 app.use('/api/peer', peerRoutes);
+app.use('/api/admin/identities', identityRoutes);
 
 // 4. Zero-Knowledge Health & Anonymity Verification Endpoint
 app.get('/api/health', (req, res) => {

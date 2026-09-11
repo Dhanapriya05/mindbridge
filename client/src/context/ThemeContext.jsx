@@ -7,16 +7,13 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem('mindbridge-theme');
-      if (saved === 'light' || saved === 'dark') {
-        return saved;
-      }
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      if (saved === 'light') {
         return 'light';
       }
     } catch (e) {
       console.warn('Error reading theme from localStorage:', e);
     }
-    return 'dark'; // Default sanctuary twilight mode
+    return 'light';
   });
 
   useEffect(() => {

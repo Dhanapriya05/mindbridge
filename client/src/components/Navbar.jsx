@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, 
   RotateCw, 
@@ -12,9 +12,11 @@ import {
   Menu, 
   X,
   Sun,
-  Moon
+  Moon,
+  Settings2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import logo from '../assets/mindbridge-logo.svg';
 
 export const Navbar = ({ 
   user, 
@@ -26,7 +28,21 @@ export const Navbar = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const [reduceAnimations, setReduceAnimations] = useState(() => localStorage.getItem('mindbridge-reduce-motion') === 'true');
   const { theme, toggleTheme, isDark } = useTheme();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('reduce-motion', reduceAnimations);
+  }, [reduceAnimations]);
+
+  const toggleAnimations = () => {
+    setReduceAnimations((current) => {
+      const next = !current;
+      localStorage.setItem('mindbridge-reduce-motion', String(next));
+      document.documentElement.classList.toggle('reduce-motion', next);
+      return next;
+    });
+  };
 
   const handleRotate = async () => {
     setIsRotating(true);
@@ -35,15 +51,17 @@ export const Navbar = ({
   };
 
   const navItems = [
-    { id: 'home', label: 'Sanctuary', icon: Compass },
-    { id: 'triage', label: 'Check-In', icon: Sparkles },
-    { id: 'lounge', label: 'Empathy Lounge', icon: Sparkles },
-    { id: 'peer', label: 'Peer Match', icon: Users },
-    { id: 'breathing', label: 'Box Breathing', icon: Wind }
+    { id: 'home', label: 'Home', icon: Compass },
+    { id: 'triage', label: 'Check in', icon: Sparkles },
+    { id: 'lounge', label: 'Talk together', icon: Sparkles },
+    { id: 'peer', label: 'Find a peer', icon: Users },
+    { id: 'breathing', label: 'Breathe', icon: Wind },
+    { id: 'relaxation', label: 'Relax', icon: Wind },
+    { id: 'admin', label: 'Admin', icon: ShieldCheck }
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           
@@ -52,22 +70,11 @@ export const Navbar = ({
             onClick={() => setCurrentPage('home')}
             className="flex items-center space-x-3 cursor-pointer group select-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-teal-500 to-calm-cyan flex items-center justify-center shadow-md shadow-brand-500/20 group-hover:scale-105 transition-all">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-600 via-teal-500 to-calm-cyan dark:from-brand-300 dark:via-teal-200 dark:to-calm-cyan bg-clip-text text-transparent">
-                  MindBridge
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-700 dark:text-brand-300 font-semibold border border-brand-500/20">
-                  Zero-Knowledge
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
-                Youth Mental Health Sanctuary
-              </p>
-            </div>
+            <img
+              src={logo}
+              alt="MindBridge logo"
+              className="h-14 w-auto object-contain drop-shadow-sm sm:h-16"
+            />
           </div>
 
           {/* Desktop Navigation Links */}
@@ -101,13 +108,22 @@ export const Navbar = ({
               title={isDark ? 'Switch to Serene Light Mode' : 'Switch to Twilight Dark Mode'}
               aria-label="Toggle Theme Mode"
               id="theme-toggle-btn"
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 text-slate-700 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 shadow-sm hover:scale-105 active:scale-95 transition-all flex items-center justify-center relative overflow-hidden group"
+              className="p-2.5 rounded-xl border border-sky-200 bg-white/80 text-sky-800 hover:bg-sky-50 shadow-sm hover:scale-105 active:scale-95 transition-all flex items-center justify-center relative overflow-hidden group"
             >
               {isDark ? (
                 <Sun className="w-4 h-4 text-amber-400 transition-transform duration-300 group-hover:rotate-45" />
               ) : (
                 <Moon className="w-4 h-4 text-indigo-600 transition-transform duration-300 group-hover:-rotate-12" />
               )}
+            </button>
+
+            <button
+              onClick={toggleAnimations}
+              title={reduceAnimations ? 'Turn animations on' : 'Reduce animations'}
+              aria-label="Reduce animations"
+              className={`p-2.5 rounded-xl border transition-all ${reduceAnimations ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-white/80 border-sky-200 text-slate-500 hover:text-sky-700'}`}
+            >
+              <Settings2 className="w-4 h-4" />
             </button>
 
             {/* Ambient Audio Mask Quick Toggle */}
@@ -123,12 +139,12 @@ export const Navbar = ({
               {audioMask.isPlaying ? (
                 <>
                   <Volume2 className="w-4 h-4 text-calm-cyan" />
-                  <span className="hidden xl:inline">432Hz Playing</span>
+                  <span className="hidden xl:inline">Sound on</span>
                 </>
               ) : (
                 <>
                   <VolumeX className="w-4 h-4" />
-                  <span className="hidden xl:inline">Sound Mask</span>
+                  <span className="hidden xl:inline">Sound</span>
                 </>
               )}
             </button>
@@ -137,7 +153,7 @@ export const Navbar = ({
             <div className="flex items-center space-x-2 bg-white/90 dark:bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-inner">
               <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
               <div className="text-xs">
-                <span className="text-slate-400 dark:text-slate-400 text-[10px] block">Anonymous Identity</span>
+                <span className="text-slate-400 dark:text-slate-400 text-[10px] block">Your space name</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
                   {user?.alias || 'Connecting...'}
                 </span>
@@ -195,7 +211,7 @@ export const Navbar = ({
         <div className="md:hidden glass-panel-glow border-b border-slate-200 dark:border-slate-800 px-4 pt-3 pb-5 space-y-3">
           <div className="flex items-center justify-between bg-white/90 dark:bg-slate-900/90 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
             <div>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">Your Anonymous Alias</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Your space name</span>
               <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">{user?.alias || 'Connecting...'}</p>
             </div>
             <button
@@ -235,7 +251,7 @@ export const Navbar = ({
               className="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300 font-medium"
             >
               {audioMask.isPlaying ? <Volume2 className="w-4 h-4 text-calm-cyan" /> : <VolumeX className="w-4 h-4" />}
-              <span>{audioMask.isPlaying ? 'Sound Mask: Active (432Hz)' : 'Enable Sound Mask'}</span>
+              <span>{audioMask.isPlaying ? 'Sound is on' : 'Turn sound on'}</span>
             </button>
 
             <button
