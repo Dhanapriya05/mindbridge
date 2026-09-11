@@ -1,0 +1,1443 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindBridge Deck - 10 Projection Slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0B0F19;
+    font-family: 'Poppins', sans-serif;
+    color: #0F172A;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* Top Progress Bar */
+  #deck-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #14B8A6, #38BDF8);
+    z-index: 9999;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Presentation Stage Container */
+  #deck-stage {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 16px 84px 16px;
+    transition: all 0.3s ease;
+  }
+
+  /* Slide Frame — sizes to exact scaled dimensions on screen */
+  .slide-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(20, 184, 166, 0.2);
+    flex-shrink: 0;
+    background-color: #F0F9F8;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  /* Inside frame: exactly 1920x1080 scaled */
+  .slide-container {
+    width: 1920px;
+    height: 1080px;
+    background-color: #F0F9F8;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 80px 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    transform-origin: top left;
+    user-select: text;
+  }
+
+  /* SLIDE PRESENTATION MODE (Default) */
+  body.mode-slide {
+    overflow: hidden;
+  }
+  body.mode-slide #deck-stage {
+    height: 100vh;
+    padding-top: 14px;
+    padding-bottom: 74px;
+    overflow: hidden;
+  }
+  body.mode-slide .slide-frame {
+    display: none;
+  }
+  body.mode-slide .slide-frame.active {
+    display: block;
+    animation: slideIn 0.25s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0.7; transform: scale(0.985); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* OVERVIEW / GRID MODE */
+  body.mode-grid {
+    overflow-y: auto;
+  }
+  body.mode-grid #deck-stage {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 40px 24px 100px 24px;
+    align-items: start;
+    min-height: auto;
+  }
+  body.mode-grid .slide-frame {
+    display: block !important;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  body.mode-grid .slide-frame:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(20, 184, 166, 0.35);
+    border-color: #14B8A6;
+  }
+  body.mode-grid .slide-frame.active {
+    border-color: #38BDF8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4);
+  }
+
+  /* Glassmorphic Control Dock */
+  .control-dock {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(20, 184, 166, 0.15);
+    border-radius: 9999px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9000;
+    color: white;
+    user-select: none;
+    max-width: 95vw;
+  }
+
+  .dock-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #E2E8F0;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .dock-btn:hover:not(:disabled) {
+    background: rgba(20, 184, 166, 0.25);
+    border-color: #14B8A6;
+    color: #5EEAD4;
+  }
+  .dock-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .dock-btn.primary {
+    background: linear-gradient(135deg, #0D9488, #0284C7);
+    border: none;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.4);
+  }
+  .dock-btn.primary:hover {
+    filter: brightness(1.15);
+  }
+
+  .dock-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #F1F5F9;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    max-width: 220px;
+  }
+  .dock-select option {
+    background: #0F172A;
+    color: #FFFFFF;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #14B8A6 0%, #38BDF8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #14B8A6 0%, #38BDF8 100%);
+  }
+  .gradient-border {
+    border-color: #14B8A6;
+  }
+  .heading-xl {
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #0F172A;
+    letter-spacing: -0.02em;
+  }
+  .stat-val {
+    font-size: 58px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .label-lg {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  @media print {
+    body { background: white !important; overflow: visible !important; }
+    .control-dock, #deck-progress { display: none !important; }
+    #deck-stage { display: block !important; padding: 0 !important; }
+    .slide-frame {
+      display: block !important;
+      width: 100% !important;
+      height: 100vh !important;
+      page-break-after: always;
+      break-after: page;
+      box-shadow: none !important;
+      border: none !important;
+    }
+    .slide-container {
+      position: relative !important;
+      transform: none !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SLIDE 1: Title -->
+  <section class="slide-container" id="slide-1">
+    <!-- Header row -->
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-12 h-12 rounded-xl object-cover shadow-sm">
+        <span class="font-bold text-2xl tracking-wider text-slate-900 uppercase">MindBridge</span>
+      </div>
+      <div class="px-6 py-2 rounded-full bg-teal-100/70 border border-teal-300/60 text-teal-800 font-semibold text-lg tracking-wide">
+        Health Track · YUVA Future 6.0
+      </div>
+      <div class="w-24"></div>
+    </div>
+
+    <!-- Center Content -->
+    <div class="my-auto text-center flex flex-col items-center max-w-6xl mx-auto">
+      <h1 class="text-[130px] font-black tracking-tight leading-none gradient-text mb-6">MindBridge</h1>
+      <p class="text-[34px] font-semibold text-slate-800 leading-snug max-w-5xl mb-12">
+        A Zero-Knowledge, Stepped-Care Mental Health Platform for Indian Higher Education
+      </p>
+
+      <div class="bg-white/80 border border-teal-200/80 rounded-2xl px-10 py-6 shadow-sm mb-6 max-w-4xl">
+        <p class="text-[23px] font-medium grid text-slate-800 leading-relaxed">
+          <span class="font-bold text-slate-950">Team leeTechqie
+    :</span> Dhanapriya Pazhaniyappan <span class="text-teal-600 font-semibold">(Lead Developer &amp; System Architect)</span> · 
+    Aathi <span class="text-teal-600 font-semibold">(Research &amp; Presentation Lead)</span> ·&nbsp;</p>
+      </div>
+
+      <p class="text-[21px] text-slate-500 font-medium tracking-wide">
+        P.T. Lee CNCET · Yi Kanchipuram Chapter · Kanchipuram, Tamil Nadu · August 2026
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-between items-center w-full text-slate-400 text-lg font-medium border-t border-slate-200/80 pt-4">
+      <span class="">YUVA Future 6.0 Presentation</span>
+      <span class="font-bold text-slate-700">01 / 10</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: The Problem -->
+  <section class="slide-container" id="slide-2">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <span class="text-slate-400 font-medium text-lg">Context &amp; Scale</span>
+      <span class="font-bold text-slate-700 text-xl">02 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-8 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Epidemic in Higher Education</span>
+        <h2 class="heading-xl">The Problem</h2>
+      </div>
+
+      <!-- 3 Stat Cards -->
+      <div class="grid grid-cols-3 gap-8">
+        <div class="bg-white rounded-3xl p-10 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <span class="stat-val text-teal-600 mb-2">69.9%</span>
+          <h3 class="text-3xl font-extrabold text-slate-900 mb-3">Anxiety</h3>
+          <p class="text-slate-500 text-xl">Severe academic, financial, and placement apprehension across university cohorts.</p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-10 border-2 border-teal-500 shadow-md flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-bl-full -z-0"></div>
+          <span class="stat-val text-sky-600 mb-2 relative z-10">70.3%</span>
+          <h3 class="text-3xl font-extrabold text-slate-900 mb-3 relative z-10">Psychological Distress</h3>
+          <p class="text-slate-500 text-xl relative z-10">Compounded chronic strain affecting baseline cognitive functioning.</p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-10 border-2 border-slate-200 shadow-sm flex flex-col justify-between">
+          <span class="stat-val text-slate-700 mb-2">59.9%</span>
+          <h3 class="text-3xl font-extrabold text-slate-900 mb-3">Depression</h3>
+          <p class="text-slate-500 text-xl">Persistent low mood, isolation, and unaddressed depressive symptoms.</p>
+        </div>
+      </div>
+      <p class="text-right text-slate-500 font-medium text-lg -mt-3">
+        Cherian et al., 2025 · 1,628 students across 8 Tier-I Indian cities
+      </p>
+
+      <!-- Full width banner -->
+      <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-3xl p-8 flex items-center justify-between shadow-xl">
+        <div class="flex items-center gap-6">
+          <div class="w-16 h-16 rounded-2xl bg-teal-500 flex items-center justify-center font-black text-3xl text-slate-950 flex-shrink-0">!</div>
+          <div>
+            <div class="text-3xl font-black text-teal-300 mb-1">70–92% Treatment Gap for Common Mental Disorders</div>
+            <div class="text-slate-300 text-xl font-normal">NIMHANS, National Mental Health Survey (NMHS) 2015-16</div>
+          </div>
+        </div>
+        <div class="text-right max-w-sm border-l border-slate-700 pl-6 text-slate-300 font-medium text-lg">
+          Institutional facilities exist on paper, but remain practically inaccessible.
+        </div>
+      </div>
+
+      <p class="text-2xl font-semibold text-slate-700 text-center">
+        <span class="text-teal-600 font-bold">40M+ college students</span> aged 18–25 in India face this crisis with almost no stigma-free pathway to early support.
+      </p>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Epidemiological Baseline</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: Root Causes -->
+  <section class="slide-container" id="slide-3">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <span class="text-slate-400 font-medium text-lg">Diagnostic Analysis</span>
+      <span class="font-bold text-slate-700 text-xl">03 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-8 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Systemic Bottlenecks</span>
+        <h2 class="heading-xl">Three Root Causes, Not One</h2>
+      </div>
+
+      <!-- 3 Numbered Cards -->
+      <div class="grid grid-cols-3 gap-8">
+        <!-- Card 1 -->
+        <div class="bg-white rounded-3xl p-10 border-4 border-slate-200 shadow-sm flex flex-col justify-between relative">
+          <div class="w-16 h-16 rounded-2xl bg-teal-50 border-2 border-teal-500 text-teal-700 text-3xl font-black flex items-center justify-center mb-6">
+            01
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-slate-900 mb-4">Psychiatrist Supply Deficit</h3>
+            <p class="text-slate-600 text-xl leading-relaxed">
+              Only <span class="font-bold text-slate-900">1 psychiatrist per 150,000 people</span> — far below the WHO recommendation (3 per 100,000). Campus counselling cells serve thousands of students per counsellor, creating multi-week backlogs.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100 text-teal-700 font-bold text-lg">
+            Structural Shortage
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white rounded-3xl p-10 border-4 border-slate-200 shadow-sm flex flex-col justify-between relative">
+          <div class="w-16 h-16 rounded-2xl bg-teal-50 border-2 border-teal-500 text-teal-700 text-3xl font-black flex items-center justify-center mb-6">
+            02
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-slate-900 mb-4">Identity Exposure Anxiety</h3>
+            <p class="text-slate-600 text-xl leading-relaxed">
+              Visiting a physical campus counselling cell is highly visible to peers, wardens, and faculty. The <span class="font-bold text-slate-900">fear of being identified and stigmatized</span> systematically outweighs the perceived pain of the mental distress itself.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100 text-teal-700 font-bold text-lg">
+            Social Invalidation
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white rounded-3xl p-10 border-4 border-slate-200 shadow-sm flex flex-col justify-between relative">
+          <div class="w-16 h-16 rounded-2xl bg-teal-50 border-2 border-teal-500 text-teal-700 text-3xl font-black flex items-center justify-center mb-6">
+            03
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-slate-900 mb-4">Missing Stepped-Care Layer</h3>
+            <p class="text-slate-600 text-xl leading-relaxed">
+              India's mental health infrastructure is binary: <span class="font-bold text-slate-900">passive generic articles</span> vs. <span class="font-bold text-slate-900">formal clinical therapy</span> or emergency helplines like Tele-MANAS, with no low-friction middle tier for moderate distress.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100 text-teal-700 font-bold text-lg">
+            Architectural Void
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Mandate -->
+      <div class="bg-teal-900/10 border-2 border-teal-500/50 rounded-2xl p-6 text-center">
+        <p class="text-2xl font-bold text-slate-900">
+          Any credible solution must be <span class="text-teal-700 underline underline-offset-4">anonymous by design</span>, <span class="text-teal-700 underline underline-offset-4">scalable independent of psychiatrist supply</span>, and <span class="text-teal-700 underline underline-offset-4">stepped-care structured</span>.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Root Cause Analysis</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: Our Solution -->
+  <section class="slide-container" id="slide-4">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <div class="px-5 py-1.5 rounded-full bg-teal-100 text-teal-900 font-bold text-base border border-teal-300">
+        Solution Type: Platform / Hybrid — Technology + Trained Peer-Care Model
+      </div>
+      <span class="font-bold text-slate-700 text-xl">04 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-6 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Core Value Proposition</span>
+        <h2 class="heading-xl">Our Solution — MindBridge</h2>
+      </div>
+
+      <div class="grid grid-cols-12 gap-10 items-center">
+        <!-- Mockup Left -->
+        <div class="col-span-5 bg-white rounded-3xl p-8 border-4 border-slate-300 shadow-xl flex flex-col items-center text-center">
+          <div class="w-full flex justify-between items-center border-b border-slate-100 pb-4 mb-8">
+            <span class="text-sm font-bold text-slate-400">MindBridge Ephemeral Session</span>
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Zero-PII Active
+            </span>
+          </div>
+
+          <div class="w-28 h-28 rounded-full gradient-bg flex items-center justify-center text-white text-5xl mb-4 shadow-lg">
+            🕊️
+          </div>
+
+          <div class="bg-slate-100 px-6 py-2.5 rounded-xl text-2xl font-black text-slate-800 tracking-wide mb-3">
+            SereneSparrow#408
+          </div>
+          <span class="text-teal-600 font-semibold text-lg mb-6">Cryptographic Session Alias</span>
+
+          <div class="w-full bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 mb-4 text-left">
+            <div class="text-emerald-900 font-black text-lg mb-1 flex items-center gap-2">
+              <svg class="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              Zero PII Collected
+            </div>
+            <p class="text-emerald-800 text-base font-medium">
+              No Name · No Roll No. · No Student Email · No Phone Verification
+            </p>
+          </div>
+
+          <div class="text-xs text-slate-400 font-mono">
+            HASH: SHA256(device_entropy + daily_salt)
+          </div>
+        </div>
+
+        <!-- Right: 3 Feature Callouts -->
+        <div class="col-span-7 flex flex-col gap-6">
+          <div class="bg-white rounded-3xl p-7 border-4 border-slate-200 hover:border-teal-500 transition-colors shadow-sm">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center text-2xl font-black flex-shrink-0">
+                01
+              </div>
+              <div>
+                <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Zero-Knowledge Onboarding</h3>
+                <p class="text-slate-600 text-xl leading-relaxed">
+                  Auto-generated pseudonym on first tap. No user registration, no single-sign-on tracking, and absolute barrier removal for stigmatized inquiries.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-7 border-4 border-slate-200 hover:border-teal-500 transition-colors shadow-sm">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl font-black flex-shrink-0">
+                02
+              </div>
+              <div>
+                <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Smart Screening</h3>
+                <p class="text-slate-600 text-xl leading-relaxed">
+                  A 4-question clinically aligned adaptive triage completed in under 1 minute. Dynamically categorizes distress into 3 calibrated care tiers.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-7 border-4 border-slate-200 hover:border-teal-500 transition-colors shadow-sm">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-black flex-shrink-0">
+                03
+              </div>
+              <div>
+                <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Resonance Module</h3>
+                <p class="text-slate-600 text-xl leading-relaxed">
+                  Anonymised campus mood heatmap + voice-masked group empathy circles. Facilitated peer connections where acoustic pitch and formants are masked on-device.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Architectural Overview</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: How It Works (Tiered Triage) -->
+  <section class="slide-container" id="slide-5">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <div class="px-5 py-2 rounded-full bg-slate-900 text-teal-300 font-bold text-base">
+        Classification completed in under 60 seconds
+      </div>
+      <span class="font-bold text-slate-700 text-xl">05 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-8 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Stepped-Care Architecture</span>
+        <h2 class="heading-xl">Smart Screening &amp; Dynamic Triage</h2>
+      </div>
+
+      <!-- Three-stage flow cards -->
+      <div class="grid grid-cols-3 gap-8 items-stretch">
+        <!-- Tier 1 -->
+        <div class="bg-white rounded-3xl p-9 border-4 border-teal-200 flex flex-col justify-between shadow-sm relative">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-4 py-1.5 rounded-full bg-teal-100 text-teal-800 font-extrabold text-sm uppercase">Mild Distress</span>
+              <span class="text-3xl font-black text-teal-600">Tier 1</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900">Self-Care</h3>
+            <div class="w-full h-1 bg-teal-500 rounded-full"></div>
+            <p class="text-slate-600 text-xl leading-relaxed pt-2">
+              Guided breathing pacers, somatic grounding protocols (5-4-3-2-1), and CBT-based audio exercises for immediate low-intensity exam/placement stress.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-slate-100 text-slate-500 text-base font-semibold">
+            Autonomous · No Human Dependent
+          </div>
+        </div>
+
+        <!-- Tier 2 -->
+        <div class="bg-white rounded-3xl p-9 border-4 border-sky-300 flex flex-col justify-between shadow-md relative">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-4 py-1.5 rounded-full bg-sky-100 text-sky-800 font-extrabold text-sm uppercase">Moderate Distress</span>
+              <span class="text-3xl font-black text-sky-600">Tier 2</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900">Peer Support</h3>
+            <div class="w-full h-1 bg-sky-500 rounded-full"></div>
+            <p class="text-slate-600 text-xl leading-relaxed pt-2">
+              Socket.io-powered anonymous 1-on-1 peer-chat queue connecting student to PMHFA-trained peer volunteers for non-crisis isolation and venting.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-slate-100 text-slate-500 text-base font-semibold">
+            Facilitated Empathy · High Scalability
+          </div>
+        </div>
+
+        <!-- Tier 3: RED emphasized card -->
+        <div class="bg-rose-50 rounded-3xl p-9 border-4 border-rose-500 flex flex-col justify-between shadow-xl relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-rose-500/10 rounded-full"></div>
+          <div class="space-y-4 relative z-10">
+            <div class="flex items-center justify-between">
+              <span class="px-4 py-1.5 rounded-full bg-rose-600 text-white font-extrabold text-sm uppercase tracking-wide">Crisis / Severe</span>
+              <span class="text-3xl font-black text-rose-600">Tier 3</span>
+            </div>
+            <h3 class="text-3xl font-black text-rose-950">Crisis Escalation</h3>
+            <div class="w-full h-1.5 bg-rose-600 rounded-full"></div>
+            <p class="text-rose-900 text-xl leading-relaxed pt-2 font-medium">
+              Immediate modal override bypassing screening. Direct 1-tap dial-out to <span class="font-extrabold underline">Tele-MANAS (14416)</span> and <span class="font-extrabold underline">KIRAN (1800-599-0019)</span> with dedicated campus SOS dispatch.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-rose-200 text-rose-700 text-base font-bold flex items-center justify-between">
+            <span class="">Immediate Clinical Route</span>
+            <span class="">&lt; 5s Handoff</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Process bar diagram -->
+      <div class="bg-white rounded-2xl p-6 border-4 border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <span class="font-black text-slate-800 text-lg">Adaptive Engine:</span>
+          <span class="text-slate-600 text-lg">4 validated clinical indicator questions determine real-time tier allocation without human latency</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">Q1</div>
+          <div class="w-6 h-1 bg-slate-300"></div>
+          <div class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">Q2</div>
+          <div class="w-6 h-1 bg-slate-300"></div>
+          <div class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">Q3</div>
+          <div class="w-6 h-1 bg-slate-300"></div>
+          <div class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm">Q4</div>
+          <div class="w-10 h-1 bg-teal-500"></div>
+          <div class="px-4 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-sm">Route Assigned</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Triage Logic</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: System Architecture -->
+  <section class="slide-container" id="slide-6">    <!-- Header row -->
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      
+      <span class="font-bold text-slate-700 text-xl">06 / 10</span>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-col gap-3 my-auto w-full max-w-6xl mx-auto">
+      <div class="flex items-end justify-between">
+        <div>
+          <span class="text-teal-600 font-bold uppercase tracking-wider text-lg">Engineering &amp; Privacy Pipeline</span>
+          <h2 class="heading-xl text-[64px] leading-none text-slate-900 font-black">System Architecture</h2>
+        </div>
+        <div class="text-right text-slate-500 font-medium text-sm max-w-sm">
+          Client-side audio masking &amp; zero persistent state across all tiers
+        </div>
+      </div>
+
+      <!-- Main Diagram Canvas -->
+      <div class="bg-white rounded-3xl p-6 border-4 border-slate-300 shadow-xl flex flex-col items-center">
+        <!-- Node 1: Student Device -->
+        <div class="bg-slate-900 text-white px-8 py-2.5 rounded-2xl border-4 border-teal-400 font-black text-xl tracking-wide flex items-center gap-4 shadow-md">
+          <span class="">📱 Student Device — Zero PII Client</span>
+          <span class="text-xs font-bold bg-teal-500 text-slate-950 px-2.5 py-0.5 rounded-md">HTTPS / WSS</span>
+        </div>
+
+        <!-- Down Arrow Connector -->
+        <div class="flex flex-col items-center py-1">
+          <div class="w-1 h-3.5 bg-slate-400"></div>
+          <span class="text-slate-400 text-xs font-bold leading-none">▼</span>
+        </div>
+
+        <!-- Node 2: Zero-Knowledge Onboarding -->
+        <div class="w-full max-w-2xl bg-teal-50 border-4 border-teal-500 rounded-xl px-6 py-2 flex items-center justify-between text-center">
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-800 bg-teal-100 px-2 py-0.5 rounded">Gateway</span>
+          <span class="text-lg font-black text-slate-900">Zero-Knowledge Onboarding</span>
+          <span class="text-slate-600 text-sm font-medium">Auto-pseudonym · No PII stored · Ephemeral token</span>
+        </div>
+
+        <!-- Down Arrow Connector -->
+        <div class="flex flex-col items-center py-1">
+          <div class="w-1 h-3.5 bg-slate-400"></div>
+          <span class="text-slate-400 text-xs font-bold leading-none">▼</span>
+        </div>
+
+        <!-- Node 3: Smart Screening -->
+        <div class="w-full max-w-2xl bg-sky-50 border-4 border-sky-500 rounded-xl px-6 py-2 flex items-center justify-between text-center">
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100 px-2 py-0.5 rounded">Engine</span>
+          <span class="text-lg font-black text-slate-900">Smart Screening</span>
+          <span class="text-slate-600 text-sm font-medium">4-question clinically aligned adaptive triage (&lt;60s)</span>
+        </div>
+
+        <!-- Down Arrow to Branch Point -->
+        <div class="flex flex-col items-center py-1">
+          <div class="w-1 h-3.5 bg-slate-400"></div>
+          <span class="text-slate-400 text-xs font-bold leading-none">▼</span>
+          <div class="px-3 py-1 bg-slate-800 text-teal-300 font-extrabold text-xs rounded-full border border-teal-400 mt-0.5">
+            ⚡ Dynamic Triage Decision
+          </div>
+        </div>
+
+        <!-- Branching 3 Columns -->
+        <div class="grid grid-cols-12 gap-5 w-full mt-2 items-start">
+          <!-- Tier 1 (Cols 4) -->
+          <div class="col-span-4 flex flex-col items-center">
+            <div class="w-full bg-teal-50 border-4 border-teal-500 rounded-2xl p-4 shadow-sm h-36 flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="px-2.5 py-0.5 rounded-full bg-teal-200 text-teal-900 font-extrabold text-xs uppercase">Tier 1 · Mild</span>
+                <span class="text-teal-700 font-black text-lg">Self-Care</span>
+              </div>
+              <p class="text-slate-700 text-sm font-medium mt-1">
+                Breathing pacers, somatic grounding protocols (5-4-3-2-1), CBT-guided digital audio.
+              </p>
+              <div class="text-xs font-bold text-teal-700 pt-1 border-t border-teal-200">
+                Autonomous &amp; Non-Clinical
+              </div>
+            </div>
+            <!-- Merge path down -->
+            <div class="flex flex-col items-center py-1.5">
+              <div class="w-1 h-4 bg-teal-500"></div>
+              <span class="text-teal-600 text-xs font-bold leading-none">▼</span>
+            </div>
+          </div>
+
+          <!-- Tier 2 (Cols 4) -->
+          <div class="col-span-4 flex flex-col items-center">
+            <div class="w-full bg-sky-50 border-4 border-sky-500 rounded-2xl p-4 shadow-sm h-36 flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="px-2.5 py-0.5 rounded-full bg-sky-200 text-sky-900 font-extrabold text-xs uppercase">Tier 2 · Moderate</span>
+                <span class="text-sky-700 font-black text-lg">Peer Support</span>
+              </div>
+              <p class="text-slate-700 text-sm font-medium mt-1">
+                Socket.io anonymous 1-on-1 peer-chat queue connecting to PMHFA-trained peer volunteers.
+              </p>
+              <div class="text-xs font-bold text-sky-700 pt-1 border-t border-sky-200">
+                Facilitated Empathy · High Scale
+              </div>
+            </div>
+            <!-- Merge path down -->
+            <div class="flex flex-col items-center py-1.5">
+              <div class="w-1 h-4 bg-sky-500"></div>
+              <span class="text-sky-600 text-xs font-bold leading-none">▼</span>
+            </div>
+          </div>
+
+          <!-- Tier 3: Bypassing crimson card (Cols 4) -->
+          <div class="col-span-4 flex flex-col items-center">
+            <div class="w-full bg-rose-600 text-white border-4 border-rose-700 rounded-2xl p-4 shadow-xl h-36 flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span class="px-2.5 py-0.5 rounded-full bg-white text-rose-700 font-black text-xs uppercase tracking-wide">Tier 3 · Crisis</span>
+                <span class="text-white font-black text-lg animate-pulse">Crisis Escalation</span>
+              </div>
+              <p class="text-rose-100 text-sm font-semibold mt-1 leading-snug">
+                Immediate SOS modal override → Direct dial to <span class="underline font-black">Tele-MANAS (14416)</span> &amp; <span class="underline font-black">KIRAN (1800-599-0019)</span>.
+              </p>
+              <div class="text-xs font-extrabold text-rose-200 pt-1 border-t border-rose-400 flex justify-between">
+                <span class="">Campus SOS Dispatch</span>
+                <span class="">&lt; 5s Handoff</span>
+              </div>
+            </div>
+            <!-- Direct bypass arrow straight to handoff -->
+            <div class="flex flex-col items-center py-1.5">
+              <div class="w-1 h-4 bg-rose-600"></div>
+              <span class="text-rose-600 text-xs font-bold leading-none">▼</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Vertical Level: Left merged Resonance Module vs Right Bypass Endpoint -->
+        <div class="grid grid-cols-12 gap-5 w-full items-center">
+          <!-- Merged Tier 1 + Tier 2 Target (Cols 8) -->
+          <div class="col-span-8 bg-indigo-50/70 border-4 border-indigo-500 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl flex-shrink-0">🎙️</div>
+              <div class="text-left">
+                <div class="text-base font-black text-slate-900">Resonance Module — Empathy Circles</div>
+                <p class="text-slate-600 text-xs font-medium">WebRTC group empathy circles · Client-side Web Audio API pitch &amp; formant voice masking</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-lg border border-indigo-200 flex-shrink-0">
+              Tier 1 &amp; Tier 2 Merged Support
+            </span>
+          </div>
+
+          <!-- Tier 3 Direct Bypass Target (Cols 4) -->
+          <div class="col-span-4 bg-rose-50 border-4 border-rose-500 rounded-2xl p-3 flex items-center justify-between shadow-md">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🚨</span>
+              <div class="text-left">
+                <div class="text-base font-black text-rose-950">Immediate Human Handoff</div>
+                <p class="text-rose-800 text-xs font-bold">Tele-MANAS Hotline / Clinical SOS</p>
+              </div>
+            </div>
+            <span class="text-xs font-extrabold text-white bg-rose-600 px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0">
+              Bypasses Rest
+            </span>
+          </div>
+        </div>
+
+        <!-- Down Connector to Storage Base -->
+        <div class="flex flex-col items-center py-1">
+          <div class="w-1 h-3 bg-rose-500"></div>
+          <span class="text-rose-600 text-xs font-bold leading-none">▼</span>
+        </div>
+
+        <!-- Final Base Box: Ephemeral In-Memory Layer -->
+        <div class="w-full border-4 border-rose-500 bg-rose-50/50 rounded-2xl px-6 py-2.5 flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="w-3.5 h-3.5 rounded-full bg-rose-600 animate-ping flex-shrink-0"></span>
+            <span class="text-base font-black text-rose-950">Ephemeral In-Memory Layer</span>
+          </div>
+          <p class="text-rose-900 text-sm font-semibold max-w-2xl text-center">
+            Strictly zero persistent disk storage · Redis pub/sub queue memory purge triggered immediately upon user disconnect or session timeout.
+          </p>
+          <span class="text-xs font-mono font-bold bg-white text-rose-700 px-3 py-1 rounded border border-rose-300">
+            zero_disk_retention: true
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide Footer -->
+    <div class="flex justify-between items-center w-full text-slate-400 text-base border-t border-slate-200/80 pt-3">
+      <span class="">Technical Specification &amp; Privacy Guarantee</span>
+      <span class="">Health Track · MindBridge</span>
+    </div></section>
+
+  <!-- SLIDE 7: Policy Ask -->
+  <section class="slide-container" id="slide-7">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <span class="text-slate-400 font-medium text-lg">National Institutional Scaling</span>
+      <span class="font-bold text-slate-700 text-xl">07 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-8 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Regulatory &amp; Governance Integration</span>
+        <h2 class="heading-xl">Policy Ask</h2>
+      </div>
+
+      <!-- Large Quote Card -->
+      <div class="bg-white rounded-3xl p-12 border-4 border-slate-300 shadow-xl relative">
+        <div class="text-8xl text-teal-400 font-serif absolute -top-8 left-8 select-none">“</div>
+        <p class="text-4xl font-extrabold text-slate-900 leading-snug relative z-10 pt-4">
+          We recommend MoE and UGC jointly mandate UGC-accredited <span class="gradient-text">Peer Mental Health First Aid (PMHFA)</span> training under NEP 2020, and MoHFW issue integration guidelines routing verified campus triage systems directly into <span class="gradient-text">Tele-MANAS</span>.
+        </p>
+      </div>
+
+      <!-- Three Government Tags -->
+      <div class="grid grid-cols-3 gap-6">
+        <div class="bg-teal-50 border-3 border-teal-500 rounded-2xl p-6 text-center">
+          <span class="text-xs font-bold text-teal-700 uppercase tracking-wider block mb-1">Government of India</span>
+          <div class="text-2xl font-black text-teal-950">Ministry of Education (MoE)</div>
+          <span class="text-sm font-semibold text-slate-600 mt-1 block">Institutional Adoption &amp; NEP 2020 Credit Framework</span>
+        </div>
+
+        <div class="bg-sky-50 border-3 border-sky-500 rounded-2xl p-6 text-center">
+          <span class="text-xs font-bold text-sky-700 uppercase tracking-wider block mb-1">Higher Education Apex Body</span>
+          <div class="text-2xl font-black text-sky-950">University Grants Commission (UGC)</div>
+          <span class="text-sm font-semibold text-slate-600 mt-1 block">PMHFA Peer-Volunteering Campus Accreditation</span>
+        </div>
+
+        <div class="bg-slate-100 border-3 border-slate-400 rounded-2xl p-6 text-center">
+          <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">National Health Authority</span>
+          <div class="text-2xl font-black text-slate-950">MoHFW &amp; Tele-MANAS</div>
+          <span class="text-sm font-semibold text-slate-600 mt-1 block">Direct API-Level Campus Crisis Gateway (14416)</span>
+        </div>
+      </div>
+
+      <!-- Supporting Impact Banner -->
+      <div class="bg-gradient-to-r from-teal-900 to-slate-900 text-white rounded-2xl p-6 text-center shadow-lg">
+        <p class="text-2xl font-bold">
+          Converts MindBridge from an institutional pilot into a <span class="text-teal-300">nationally interoperable layer</span> — without training a single additional psychiatrist.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Public Policy &amp; Systemic Integration</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: Feasibility & Scalability -->
+  <section class="slide-container" id="slide-8">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <span class="text-slate-400 font-medium text-lg">Execution Plan &amp; Financials</span>
+      <span class="font-bold text-slate-700 text-xl">08 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-6 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Execution Horizon</span>
+        <h2 class="heading-xl">Feasibility &amp; Scalability</h2>
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 items-stretch">
+        <!-- Left: 3-phase timeline (7 cols) -->
+        <div class="col-span-7 bg-white rounded-3xl p-8 border-4 border-slate-200 shadow-sm flex flex-col justify-between">
+          <h3 class="text-2xl font-extrabold text-slate-900 mb-4 flex items-center gap-3">
+            <span class="w-3 h-8 bg-teal-500 rounded-full"></span> 90-Day Implementation Timeline
+          </h3>
+
+          <div class="space-y-4">
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-teal-50/70 border border-teal-200">
+              <div class="px-3 py-1 rounded-lg bg-teal-600 text-white font-black text-sm flex-shrink-0">Phase 1</div>
+              <div>
+                <h4 class="text-xl font-bold text-slate-900">Days 1–30: Platform Hardening</h4>
+                <p class="text-slate-600 text-lg">PMHFA peer-volunteer training cohort 1, Tele-MANAS protocol integration testing, security audit.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-sky-50/70 border border-sky-200">
+              <div class="px-3 py-1 rounded-lg bg-sky-600 text-white font-black text-sm flex-shrink-0">Phase 2</div>
+              <div>
+                <h4 class="text-xl font-bold text-slate-900">Days 31–60: Campus Live Pilot</h4>
+                <p class="text-slate-600 text-lg">Rollout across 2 partner campuses, real-time triage queue load testing, student feedback loops.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-indigo-50/70 border border-indigo-200">
+              <div class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-black text-sm flex-shrink-0">Phase 3</div>
+              <div>
+                <h4 class="text-xl font-bold text-slate-900">Days 61–90: Audit &amp; Assessment</h4>
+                <p class="text-slate-600 text-lg">Independent clinical efficacy audit, distress-reduction metric analysis, scalability report.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Cost Table (5 cols) -->
+        <div class="col-span-5 bg-white rounded-3xl p-8 border-4 border-slate-200 shadow-sm flex flex-col justify-between">
+          <h3 class="text-2xl font-extrabold text-slate-900 mb-3 flex items-center gap-3">
+            <span class="w-3 h-8 bg-sky-500 rounded-full"></span> Pilot Budget Breakdown
+          </h3>
+
+          <div class="space-y-3 text-lg">
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <span class="text-slate-600">Platform &amp; Hosting</span>
+              <span class="font-bold text-slate-900">₹45,000</span>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <span class="text-slate-600">PMHFA Volunteer Training</span>
+              <span class="font-bold text-slate-900">₹30,000</span>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <span class="text-slate-600">Clinical Advisory &amp; Oversight</span>
+              <span class="font-bold text-slate-900">₹20,000</span>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <span class="text-slate-600">Onboarding &amp; Campus Outreach</span>
+              <span class="font-bold text-slate-900">₹15,000</span>
+            </div>
+            <div class="flex justify-between py-1.5 border-b border-slate-100">
+              <span class="text-slate-600">Monitoring &amp; Contingency</span>
+              <span class="font-bold text-slate-900">₹10,000</span>
+            </div>
+            <div class="flex justify-between py-2 pt-3 border-t-2 border-slate-800 text-xl font-black text-slate-900">
+              <span class="">Total Pilot Cost</span>
+              <span class="text-teal-600 font-extrabold text-2xl">₹1,20,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Strip: Roadmap -->
+      <div class="bg-slate-900 text-white rounded-2xl p-5 flex items-center justify-between">
+        <span class="text-teal-400 font-black text-lg uppercase tracking-wider">Multi-Stage Roadmap:</span>
+        <div class="flex items-center gap-3 text-xl font-bold">
+          <span class="text-white">Pilot (2 Campuses)</span>
+          <span class="text-teal-400">→</span>
+          <span class="text-slate-300">City (Kanchipuram District)</span>
+          <span class="text-teal-400">→</span>
+          <span class="text-slate-300">State (Tamil Nadu)</span>
+          <span class="text-teal-400">→</span>
+          <span class="text-teal-300">National (UGC-Accredited)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Operational Viability</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: What's Different -->
+  <section class="slide-container" id="slide-9">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <span class="text-slate-400 font-medium text-lg">Competitive Advantage</span>
+      <span class="font-bold text-slate-700 text-xl">09 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-6 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Defensibility Matrix</span>
+        <h2 class="heading-xl">What's Different</h2>
+      </div>
+
+      <!-- Comparison Table -->
+      <div class="bg-white rounded-3xl overflow-hidden border-4 border-slate-300 shadow-xl">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-900 text-white">
+              <th class="p-6 text-2xl font-black w-1/4 border-r border-slate-800">Dimension</th>
+              <th class="p-6 text-2xl font-bold w-1/4 text-slate-400 border-r border-slate-800">Traditional Counselling</th>
+              <th class="p-6 text-2xl font-bold w-1/4 text-slate-400 border-r border-slate-800">Commercial Apps</th>
+              <th class="p-6 text-2xl font-black w-1/4 bg-teal-600 text-white">MindBridge</th>
+            </tr>
+          </thead>
+          <tbody class="text-xl">
+            <!-- Row 1 -->
+            <tr class="border-b-2 border-slate-100">
+              <td class="p-6 font-extrabold text-slate-900 border-r-2 border-slate-100 bg-slate-50/50">Identity Protection</td>
+              <td class="p-6 text-rose-600 font-bold border-r-2 border-slate-100">Low (Physical cell visibility)</td>
+              <td class="p-6 text-amber-600 font-bold border-r-2 border-slate-100">Moderate (Email/Phone SSO)</td>
+              <td class="p-6 bg-teal-50 text-teal-900 font-black">High — Zero-PII by design</td>
+            </tr>
+            <!-- Row 2 -->
+            <tr class="border-b-2 border-slate-100">
+              <td class="p-6 font-extrabold text-slate-900 border-r-2 border-slate-100 bg-slate-50/50">Supply Bottleneck</td>
+              <td class="p-6 text-rose-600 font-bold border-r-2 border-slate-100">Severe (1:150,000 deficit)</td>
+              <td class="p-6 text-amber-600 font-bold border-r-2 border-slate-100">Costly (Paywalled therapists)</td>
+              <td class="p-6 bg-teal-50 text-teal-900 font-black">Removed via peer-tiering</td>
+            </tr>
+            <!-- Row 3 -->
+            <tr class="border-b-2 border-slate-100">
+              <td class="p-6 font-extrabold text-slate-900 border-r-2 border-slate-100 bg-slate-50/50">Audio Privacy</td>
+              <td class="p-6 text-slate-400 font-bold border-r-2 border-slate-100">N/A (In-person)</td>
+              <td class="p-6 text-amber-600 font-bold border-r-2 border-slate-100">Rarely offered / Cloud-stored</td>
+              <td class="p-6 bg-teal-50 text-teal-900 font-black">Client-side real-time masking</td>
+            </tr>
+            <!-- Row 4 -->
+            <tr>
+              <td class="p-6 font-extrabold text-slate-900 border-r-2 border-slate-100 bg-slate-50/50">Collective Support</td>
+              <td class="p-6 text-slate-400 font-bold border-r-2 border-slate-100">Individual only</td>
+              <td class="p-6 text-slate-500 font-bold border-r-2 border-slate-100">Individual, content-led</td>
+              <td class="p-6 bg-teal-50 text-teal-900 font-black">Group empathy circles</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bottom Banner -->
+      <div class="bg-gradient-to-r from-teal-500 to-sky-500 rounded-2xl p-6 text-center text-slate-950 font-black text-2xl shadow-md">
+        “Privacy and scale are treated as prerequisites, not trade-offs.”
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 pt-3 flex justify-between text-slate-400 text-base">
+      <span class="">Market &amp; Institutional Differentiation</span>
+      <span class="">Health Track · MindBridge</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: Impact + Thank You -->
+  <section class="slide-container" id="slide-10">
+    <div class="flex justify-between items-center w-full">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpeg" alt="MindBridge Logo" class="w-10 h-10 rounded-lg object-cover">
+        <span class="font-bold text-xl text-slate-800">MindBridge</span>
+      </div>
+      <div class="px-5 py-2 rounded-full bg-rose-600 text-white font-black text-base flex items-center gap-2 shadow-sm">
+        <span class="w-3 h-3 rounded-full bg-white animate-pulse"></span>
+        SOS Crisis Protocol: 14416
+      </div>
+      <span class="font-bold text-slate-700 text-xl">10 / 10</span>
+    </div>
+
+    <div class="flex flex-col gap-8 my-auto">
+      <div>
+        <span class="text-teal-600 font-bold uppercase tracking-wider text-xl">Measurable National Outcomes</span>
+        <h2 class="heading-xl">Impact Potential</h2>
+      </div>
+
+      <!-- Four Stat Tiles -->
+      <div class="grid grid-cols-4 gap-6">
+        <div class="bg-white rounded-3xl p-8 border-4 border-slate-200 shadow-sm text-center">
+          <div class="stat-val text-teal-600 mb-2">40M+</div>
+          <div class="text-xl font-extrabold text-slate-900">Target Population</div>
+          <p class="text-slate-500 text-sm mt-2">Indian college students aged 18–25</p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 border-4 border-teal-400 shadow-md text-center">
+          <div class="stat-val text-sky-600 mb-2">40%</div>
+          <div class="text-xl font-extrabold text-slate-900">Campus Adoption Target</div>
+          <p class="text-slate-500 text-sm mt-2">Targeted Year 1 cohort activation</p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 border-4 border-slate-200 shadow-sm text-center">
+          <div class="stat-val text-indigo-600 mb-2">25–30%</div>
+          <div class="text-xl font-extrabold text-slate-900">Distress Score Reduction</div>
+          <p class="text-slate-500 text-sm mt-2">Post 4-week peer &amp; self-care cycle</p>
+        </div>
+
+        <div class="bg-rose-50 rounded-3xl p-8 border-4 border-rose-400 shadow-sm text-center">
+          <div class="stat-val text-rose-600 mb-2">&lt; 5s</div>
+          <div class="text-xl font-extrabold text-rose-950">Crisis Handoff Time</div>
+          <p class="text-rose-800 text-sm mt-2">Tier 3 Tele-MANAS direct dial-out</p>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <span class="inline-block bg-teal-50 border-2 border-teal-300 text-teal-900 text-xl font-bold px-8 py-2.5 rounded-full">
+          ✨ Over 80%+ of non-clinical student cases resolved without requiring overburdened psychiatrist referral.
+        </span>
+      </div>
+
+      <!-- Bottom Thank You Segment -->
+      <div class="bg-slate-900 text-white rounded-3xl p-10 flex items-center justify-between shadow-2xl">
+        <div>
+          <h3 class="text-6xl font-black gradient-text mb-2">Thank You!</h3>
+          <p class="text-2xl font-bold text-slate-300">Team leeTechqie
+     · Questions &amp; Answers</p>
+          <p class="text-slate-400 text-base mt-2">Dhanapriya Pazhaniyappan · Aathi · Dhanalakshmi · P.T. Lee CNCET</p>
+        </div>
+        <div class="flex flex-col items-end gap-3">
+          <div class="flex items-center gap-3">
+            <span class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 font-mono text-sm text-teal-300">https://github.com/TNlucfer01/mindbridge</span>
+          </div>
+          <span class="text-xs text-slate-500">Kanchipuram, Tamil Nadu · August 2026</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Small footer citation -->
+    <div class="border-t border-slate-200 pt-3 flex justify-between items-center text-slate-400 text-sm">
+      <span class="">Sources: NIMHANS NMHS 2015-16 · Cherian et al. 2025 · UGC · MoHFW Tele-MANAS</span>
+      <span class="font-bold text-slate-700 text-base">Health Track · YUVA Future 6.0</span>
+    </div>
+  </section>
+
+  <!-- Top Slide Progress Bar -->
+  <div id="deck-progress"></div>
+
+  <!-- Floating Glassmorphic Presentation Dock -->
+  <nav class="control-dock" id="controlDock" aria-label="Deck Controls">
+    <button class="dock-btn" id="btnPrev" title="Previous slide (Left Arrow / Up Arrow / PageUp)">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      <span>Prev</span>
+    </button>
+
+    <select class="dock-select" id="slideSelect" aria-label="Jump to slide">
+      <option value="1">1. Title · Health Track</option>
+      <option value="2">2. The Problem · Epidemic</option>
+      <option value="3">3. Root Causes · 3 Bottlenecks</option>
+      <option value="4">4. Our Solution · MindBridge</option>
+      <option value="5">5. How It Works · Tiered Triage</option>
+      <option value="6">6. System Architecture</option>
+      <option value="7">7. Policy Ask · MoE &amp; UGC</option>
+      <option value="8">8. Feasibility &amp; Budget</option>
+      <option value="9">9. What's Different · Matrix</option>
+      <option value="10">10. Impact &amp; Thank You</option>
+    </select>
+
+    <span class="text-xs font-bold text-teal-300 font-mono px-1" id="slideCounter">01 / 10</span>
+
+    <button class="dock-btn" id="btnNext" title="Next slide (Right Arrow / Down Arrow / Space / PageDown)">
+      <span>Next</span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+    </button>
+
+    <div class="h-4 w-px bg-slate-700 mx-1 hidden sm:block"></div>
+
+    <button class="dock-btn hidden sm:flex" id="btnMode" title="Toggle Overview / Grid (O key)">
+      <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      <span id="modeLabel">Overview</span>
+    </button>
+
+    <button class="dock-btn hidden md:flex" id="btnFullscreen" title="Toggle Fullscreen (F key)">
+      <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+      <span>Fullscreen</span>
+    </button>
+
+    <a href="MindBridge_Deck.pptx" download="MindBridge_Deck.pptx" class="dock-btn primary" title="Download editable 16:9 PowerPoint Presentation">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      <span>Download PPTX</span>
+    </a>
+  </nav>
+
+<script>
+(function() {
+  const TOTAL_SLIDES = 10;
+  let currentSlide = 1;
+  let isGridMode = false;
+
+  function setupStage() {
+    document.body.classList.add('mode-slide');
+    
+    let stage = document.getElementById('deck-stage');
+    if (!stage) {
+      stage = document.createElement('div');
+      stage.id = 'deck-stage';
+      const slides = Array.from(document.querySelectorAll('.slide-container'));
+      if (slides.length > 0) {
+        slides[0].parentNode.insertBefore(stage, slides[0]);
+      }
+      slides.forEach((slide, idx) => {
+        const slideNum = idx + 1;
+        const frame = document.createElement('div');
+        frame.className = 'slide-frame' + (slideNum === 1 ? ' active' : '');
+        frame.id = 'frame-' + slideNum;
+        frame.dataset.slide = slideNum;
+        
+        frame.addEventListener('click', () => {
+          if (isGridMode) {
+            goToSlide(slideNum);
+            toggleMode(false);
+          }
+        });
+
+        frame.appendChild(slide);
+        stage.appendChild(frame);
+      });
+    }
+  }
+
+  function resizeSlides() {
+    const stage = document.getElementById('deck-stage');
+    if (!stage) return;
+
+    if (!isGridMode) {
+      // Laptop & Screen fit: 100% visible with zero scroll
+      const availW = Math.max(320, window.innerWidth - 32);
+      const availH = Math.max(240, window.innerHeight - 84);
+      const scale = Math.min(availW / 1920, availH / 1080);
+      const frameW = Math.round(1920 * scale);
+      const frameH = Math.round(1080 * scale);
+
+      document.querySelectorAll('.slide-frame').forEach(frame => {
+        frame.style.width = frameW + 'px';
+        frame.style.height = frameH + 'px';
+        const slide = frame.querySelector('.slide-container');
+        if (slide) {
+          slide.style.transform = 'scale(' + scale + ')';
+        }
+      });
+    } else {
+      // Grid mode: calculate scale from each frame's column width
+      document.querySelectorAll('.slide-frame').forEach(frame => {
+        const frameW = frame.clientWidth || 380;
+        const scale = frameW / 1920;
+        frame.style.height = Math.round(1080 * scale) + 'px';
+        const slide = frame.querySelector('.slide-container');
+        if (slide) {
+          slide.style.transform = 'scale(' + scale + ')';
+        }
+      });
+    }
+  }
+
+  function goToSlide(num) {
+    if (num < 1) num = 1;
+    if (num > TOTAL_SLIDES) num = TOTAL_SLIDES;
+    currentSlide = num;
+
+    document.querySelectorAll('.slide-frame').forEach(frame => {
+      const fNum = parseInt(frame.dataset.slide, 10);
+      if (fNum === currentSlide) {
+        frame.classList.add('active');
+        if (isGridMode) {
+          frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        frame.classList.remove('active');
+      }
+    });
+
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const slideSelect = document.getElementById('slideSelect');
+    const slideCounter = document.getElementById('slideCounter');
+    const progressBar = document.getElementById('deck-progress');
+
+    if (btnPrev) btnPrev.disabled = currentSlide === 1;
+    if (btnNext) btnNext.disabled = currentSlide === TOTAL_SLIDES;
+    if (slideSelect) slideSelect.value = currentSlide;
+    if (slideCounter) slideCounter.textContent = (currentSlide < 10 ? '0' : '') + currentSlide + ' / ' + TOTAL_SLIDES;
+    if (progressBar) progressBar.style.width = ((currentSlide / TOTAL_SLIDES) * 100) + '%';
+
+    window.location.hash = '#' + currentSlide;
+    resizeSlides();
+  }
+
+  function toggleMode(forceGrid) {
+    isGridMode = typeof forceGrid === 'boolean' ? forceGrid : !isGridMode;
+    const modeLabel = document.getElementById('modeLabel');
+    if (isGridMode) {
+      document.body.classList.remove('mode-slide');
+      document.body.classList.add('mode-grid');
+      if (modeLabel) modeLabel.textContent = 'Slide View';
+    } else {
+      document.body.classList.remove('mode-grid');
+      document.body.classList.add('mode-slide');
+      if (modeLabel) modeLabel.textContent = 'Overview';
+    }
+    setTimeout(resizeSlides, 60);
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function initEvents() {
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const slideSelect = document.getElementById('slideSelect');
+    const btnMode = document.getElementById('btnMode');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+
+    if (btnPrev) btnPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+    if (btnNext) btnNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+    if (slideSelect) slideSelect.addEventListener('change', (e) => goToSlide(parseInt(e.target.value, 10)));
+    if (btnMode) btnMode.addEventListener('click', () => toggleMode());
+    if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case 'PageDown':
+        case ' ':
+          e.preventDefault();
+          goToSlide(currentSlide + 1);
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+        case 'PageUp':
+          e.preventDefault();
+          goToSlide(currentSlide - 1);
+          break;
+        case 'Home':
+          e.preventDefault();
+          goToSlide(1);
+          break;
+        case 'End':
+          e.preventDefault();
+          goToSlide(TOTAL_SLIDES);
+          break;
+        case 'f':
+        case 'F':
+          toggleFullscreen();
+          break;
+        case 'o':
+        case 'O':
+        case 'g':
+        case 'G':
+          toggleMode();
+          break;
+        default:
+          if (e.key >= '1' && e.key <= '9') {
+            goToSlide(parseInt(e.key, 10));
+          } else if (e.key === '0') {
+            goToSlide(10);
+          }
+          break;
+      }
+    });
+
+    // Touch Swipe
+    let touchStartX = 0;
+    let touchStartY = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      const diffX = e.changedTouches[0].screenX - touchStartX;
+      const diffY = e.changedTouches[0].screenY - touchStartY;
+      if (Math.abs(diffX) > 50 && Math.abs(diffY) < 100) {
+        if (diffX < 0) goToSlide(currentSlide + 1);
+        else goToSlide(currentSlide - 1);
+      }
+    }, { passive: true });
+
+    // Hash sync
+    window.addEventListener('hashchange', () => {
+      const match = window.location.hash.match(/^#(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num >= 1 && num <= TOTAL_SLIDES && num !== currentSlide) {
+          goToSlide(num);
+        }
+      }
+    });
+
+    window.addEventListener('resize', resizeSlides);
+  }
+
+  function init() {
+    setupStage();
+    initEvents();
+    
+    const match = window.location.hash.match(/^#(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num >= 1 && num <= TOTAL_SLIDES) {
+        currentSlide = num;
+      }
+    }
+    goToSlide(currentSlide);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body></html>
