@@ -14,7 +14,6 @@ import { RegistrationGate } from './components/RegistrationGate';
 import { RelaxationSuite } from './pages/RelaxationSuite';
 import { AdminUIDManager } from './pages/AdminUIDManager';
 import { GalaxyDecor } from './components/GalaxyDecor';
-import { AIChatbot } from './components/AIChatbot';
 
 function MindBridgeApp() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -154,8 +153,6 @@ function MindBridgeApp() {
           </div>
         </div>
       </footer>
-
-      <AIChatbot />
     </div>
   );
 }
